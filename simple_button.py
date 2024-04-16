@@ -21,6 +21,7 @@ janela = tk.Tk()
 janela.title("Interface simples")
 
 
+
 rotulo = tk.Label(janela, text="Olá, Tkinter!")
 rotulo.pack()
 
@@ -30,6 +31,7 @@ campo_texto.pack()
 
 
 botao = tk.Button(janela, text="Enviar", command=button_submit)
+botao.config(fg="red")
 botao.pack()
 
 janela.mainloop()
