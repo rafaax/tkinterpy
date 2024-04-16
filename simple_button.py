@@ -19,7 +19,7 @@ def mostrar_texto():
 
 janela = tk.Tk()
 janela.title("Interface simples")
-
+janela.geometry('700x400')
 
 
 rotulo = tk.Label(janela, text="Olá, Tkinter!")
