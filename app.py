@@ -35,7 +35,7 @@ text_1.pack()
 input_text = Entry(app, width=30)
 input_text.pack()
 
-input_date = DateEntry(app, width=12, background='black', foreground='white', borderwidth=2, year=now.year)
+input_date = DateEntry(app, width=12, background='black', foreground='white', borderwidth=2, year=now.year, date_pattern="dd/mm/yyyy")
 input_date.pack(pady=10)
 
 Button(app, text= "Salvar", command= submit).pack()
