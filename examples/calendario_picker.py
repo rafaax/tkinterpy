@@ -1,3 +1,5 @@
+import sys
+sys.path.append('..')
 from tkinter import *
 from tkcalendar import Calendar
 import src.conn as conn

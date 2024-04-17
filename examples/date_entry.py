@@ -1,8 +1,11 @@
-from tkinter import *
-from tkcalendar import Calendar, DateEntry
-import src.conn as conn
+import sys
 import pymysql
 import datetime
+sys.path.append('..')
+from tkinter import *
+from tkcalendar import Calendar, DateEntry
+from src import conn
+
 
 now = datetime.datetime.now()
 
@@ -31,7 +34,7 @@ campo_texto.pack()
 date_entry = DateEntry(app, width=12, background='black', foreground='white', borderwidth=2, year=now.year)
 date_entry.pack(pady=10)
 
-Button(app, text = "Get Date", command = grad_date).pack()
+Button(app, text= "Get Date", command= grad_date).pack()
 
 date = Label(app, text="")
 date.pack()
