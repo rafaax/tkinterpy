@@ -4,24 +4,38 @@ import datetime
 from tkinter import *
 from tkinter import messagebox
 from tkcalendar import Calendar, DateEntry
-from src import conn
+from src import conexao
+
+def submit():
+
+    conn = pymysql.connect(host=conexao.host, user=conexao.user, password=conexao.passw, database=conexao.db,charset='utf8')
+    cursor = conn.cursor()
+
+    data = input_date.get_date()
+    placa = input_text.get()
+    
+    if not placa:
+        messagebox.showwarning("Erro", "Por favor insira alguma placa válida.")
+        return False
+
+    placa = placa.replace('-', '') # removendo o traço da string para nao haver conflito
+
+    data_hoje = now.strftime("%Y-%m-%d")
+    data_input = data.strftime("%Y-%m-%d")
+    
+    if data_input > data_hoje:
+        messagebox.showerror("Erro", "Data inserida não é valida por ser maior que a data atual!")
+        return False
+
+    query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data + '" ORDER BY data_atualizacao DESC'
+    cursor.execute(query)
+
+    results = cursor.fetchall()
+    print(results)
+    
 
 
 now = datetime.datetime.now()
-
-def submit():
-    data = input_date.get_date()
-    placa = input_text.get()
-
-    if not placa:
-        messagebox.showwarning("Erro", "Por favor insira alguma placa válida.")
-    else:    
-        print(data)
-        print(placa)
-
-
-conn = pymysql.connect(host=conn.host, user=conn.user, password=conn.passw, database=conn.db,charset='utf8')
-cursor = conn.cursor()
 
 app = Tk()
 app.title('Gerar Relatorio')
@@ -32,13 +46,13 @@ app.wm_minsize(width=600, height=400)
 text_1 = Label(app, text="Insira a placa")
 text_1.pack()
 
-input_text = Entry(app, width=30)
+input_text = Entry(app, width=12)
 input_text.pack()
 
 input_date = DateEntry(app, width=12, background='black', foreground='white', borderwidth=2, year=now.year, date_pattern="dd/mm/yyyy")
 input_date.pack(pady=10)
 
-Button(app, text= "Salvar", command= submit).pack()
+Button(app, text= "Salvar", command=submit).pack()
 
 
 app.mainloop()
