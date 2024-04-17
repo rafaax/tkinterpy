@@ -1,10 +1,13 @@
 import sys
 import pymysql
 import datetime
+import pprint
 from tkinter import *
 from tkinter import messagebox
 from tkcalendar import Calendar, DateEntry
 from src import conexao
+from mysql.connector import connect
+
 
 def submit():
 
@@ -27,11 +30,17 @@ def submit():
         messagebox.showerror("Erro", "Data inserida não é valida por ser maior que a data atual!")
         return False
 
-    query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data + '" ORDER BY data_atualizacao DESC'
+    query = 'SELECT * from sau_veiculos where placa = "' + placa + '" limit 1'
     cursor.execute(query)
+    results = cursor.fetchone()
+    for r in results:
+        print(r)
+    # print(results)
+    #query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data_input + '" ORDER BY data_atualizacao DESC'
+    # cursor.execute(query)
 
-    results = cursor.fetchall()
-    print(results)
+    # results = cursor.fetchall()
+    # pprint.pprint(results)
     
 
 
