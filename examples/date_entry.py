@@ -8,8 +8,8 @@ now = datetime.datetime.now()
 
 
 def grad_date():
-    data_formatada = datetime.datetime.strptime(cal.get_date(), "%m/%d/%y").strftime("%Y-%m-%d")
-    date.config(text = "Selected Date is: " + data_formatada)
+    data_formato_db = date_entry.get_date()
+    date.config(text = data_formato_db)
 
 
 conn = pymysql.connect(host=conn.host, user=conn.user, password=conn.passw, database=conn.db,charset='utf8')
@@ -28,10 +28,13 @@ rotulo.pack()
 campo_texto = Entry(app, width=30)
 campo_texto.pack()
 
-date_entry = DateEntry(app, width=12, background='darkblue', foreground='white', borderwidth=2, year=2010)
+date_entry = DateEntry(app, width=12, background='black', foreground='white', borderwidth=2, year=now.year)
 date_entry.pack(pady=10)
 
 Button(app, text = "Get Date", command = grad_date).pack()
+
+date = Label(app, text="")
+date.pack()
 
 # query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data + '" ORDER BY data_atualizacao DESC'
 # cursor.execute(query)
