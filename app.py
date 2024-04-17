@@ -11,9 +11,8 @@ from mysql.connector import connect
 
 def submit():
 
-    conn = pymysql.connect(host=conexao.host, user=conexao.user, password=conexao.passw, database=conexao.db,charset='utf8')
-    cursor = conn.cursor()
-
+    conn = connect(user=conexao.user, password=conexao.passw, host=conexao.host, database=conexao.db)
+    
     data = input_date.get_date()
     placa = input_text.get()
     
@@ -30,12 +29,15 @@ def submit():
         messagebox.showerror("Erro", "Data inserida não é valida por ser maior que a data atual!")
         return False
 
-    query = 'SELECT * from sau_veiculos where placa = "' + placa + '" limit 1'
-    cursor.execute(query)
-    results = cursor.fetchone()
-    for r in results:
-        print(r)
-    # print(results)
+    cursor = conn.cursor()
+
+    query = 'SELECT equi_id from sau_veiculos where placa = %s limit 1'
+    cursor.execute(query, (placa, ))
+
+    myresult = cursor.fetchall()
+    for x in myresult:
+        print(x)
+    
     #query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data_input + '" ORDER BY data_atualizacao DESC'
     # cursor.execute(query)
 
