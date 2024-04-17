@@ -14,8 +14,6 @@ def grad_date():
     date.config(text = "Selected Date is: " + data_formatada)
 
 
-conn = pymysql.connect(host=conn.host, user=conn.user, password=conn.passw, database=conn.db,charset='utf8')
-cursor = conn.cursor()
 
 app = Tk()
 app.title('Gerar Relatorio')

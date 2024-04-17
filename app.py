@@ -2,15 +2,22 @@ import sys
 import pymysql
 import datetime
 from tkinter import *
+from tkinter import messagebox
 from tkcalendar import Calendar, DateEntry
 from src import conn
 
 
 now = datetime.datetime.now()
 
-def grad_date():
-    data_formato_db = date_entry.get_date()
-    date.config(text = data_formato_db)
+def submit():
+    data = input_date.get_date()
+    placa = input_text.get()
+
+    if not placa:
+        messagebox.showwarning("Erro", "Por favor insira alguma placa válida.")
+    else:    
+        print(data)
+        print(placa)
 
 
 conn = pymysql.connect(host=conn.host, user=conn.user, password=conn.passw, database=conn.db,charset='utf8')
@@ -31,7 +38,7 @@ input_text.pack()
 input_date = DateEntry(app, width=12, background='black', foreground='white', borderwidth=2, year=now.year)
 input_date.pack(pady=10)
 
-Button(app, text= "Get Date", command= grad_date).pack()
+Button(app, text= "Salvar", command= submit).pack()
 
 
 app.mainloop()
