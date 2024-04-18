@@ -34,9 +34,17 @@ def submit():
     query = 'SELECT equi_id from sau_veiculos where placa = %s limit 1'
     cursor.execute(query, (placa, ))
 
-    myresult = cursor.fetchall()
-    for x in myresult:
-        print(x)
+    result = cursor.fetchone()
+
+    if result:
+        
+        equipament_id = result[0]
+
+        print("Consulta retornou resultado:", equipament_id)
+    else:
+        messagebox.showerror("Erro", "Placa não é valida!")
+
+
     
     #query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data_input + '" ORDER BY data_atualizacao DESC'
     # cursor.execute(query)
