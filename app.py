@@ -11,12 +11,14 @@ import chardet
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import requests
 from io import BytesIO
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.utils import get_column_letter
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
 from openpyxl.styles import PatternFill
+from openpyxl import load_workbook
 from xhtml2pdf import pisa
 from tkinter import *
 from tkinter import messagebox, ttk
@@ -103,16 +105,53 @@ def submit():
             df['DATA'] = df['DATA'].dt.strftime('%d/%m/%Y %H:%M:%S')
 
             df['ULTRAPASSADO'] = df.apply(lambda row: func.ultrapassado(row['VELOCIDADE'], row['VELOCIDADE VIA']), axis=1)
-            df[["VELOCIDADE", "VELOCIDADE VIA"]] = df[["VELOCIDADE", "VELOCIDADE VIA"]].applymap(func.add_km)
+            df[["VELOCIDADE", "VELOCIDADE VIA"]] = df[["VELOCIDADE", "VELOCIDADE VIA"]].map(func.add_km)
 
-            styled_df = df.style.set_properties(**{
+            # styled_df = df.style.set_properties(**{
+            #     'font-family': 'Gotham Book',
+            #     'font-size': '18px',
+            # }).applymap(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}''') \
+            #     .applymap(func.velocidade_excedida, subset='ULTRAPASSADO')
+
+            font_style = {
                 'font-family': 'Gotham Book',
-                'font-size': '18px',
-            }).applymap(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}''') \
-                .applymap(func.velocidade_excedida, subset='ULTRAPASSADO')
+                'font-size': '18px'
+            }
 
+            styled_df = df.style.set_properties(**font_style)
+
+            styled_df = styled_df.map(func.velocidade_excedida, subset='ULTRAPASSADO')
+
+            styled_df = styled_df.map(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}')
+    
             filename_xlsx = 'files/xlsx/' + placa + str(equipament_id) + data_input + '.xlsx'
-            styled_df.to_excel(filename_xlsx, index=False)
+            styled_df.to_excel(filename_xlsx, index=False, sheet_name = placa, engine='openpyxl')
+
+            wb = load_workbook(filename_xlsx)
+            ws = wb.active
+
+            image_url = 'https://vetorian.com/wp-content/uploads/2021/06/Logo-Vetorian-Horizontal_menor-1.png'  
+            response = requests.get(image_url)
+            image_content = BytesIO(response.content)
+
+            img = Image(image_content)
+
+            img = Image('image.jpg')  
+            ws.add_image(img, 'A1') 
+            
+            for column in ws.columns:
+                max_length = 0
+                column_letter = column[0].column_letter
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(cell.value)
+                    except:
+                        pass
+                adjusted_width = (max_length + 2) * 1.2  
+                ws.column_dimensions[column_letter].width = adjusted_width
+
+            wb.save(filename_xlsx)
             
             # print(df)
         else:
