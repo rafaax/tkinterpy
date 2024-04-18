@@ -2,6 +2,7 @@ import sys
 import pymysql
 import datetime
 import pprint
+import csv
 from tkinter import *
 from tkinter import messagebox, ttk
 from tkcalendar import Calendar, DateEntry
@@ -53,13 +54,34 @@ def submit():
         progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
         progress_bar.pack()
         
-        loading_page.after(5000, close_loading)
+        # loading_page.after(5000, close_loading)
         progress_bar.start(10)
 
-        
+        query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
+        cursor.execute(query, (equipament_id, data_input))
 
-        # query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data_input + '" ORDER BY data_atualizacao DESC'
-        # cursor.execute(query)
+        results = cursor.fetchall()
+
+        loading_page.after(5000, close_loading)
+
+        data_to_write = [result for result in results]
+        with open('files/csv/'+placa + str(equipament_id) + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+            csvwriter = csv.writer(csvfile)
+
+            csvwriter.writerow(
+                ['PLACA', 'DATA', 'LOCAL', 'VELOCIDADE', 'VELOCIDADE VIA', 'LATITUDE', 'LONGITUDE', 'ULTRAPASSADO'])
+            
+            for row in data_to_write:
+                velocidade, pos_id = row[3], row[4]
+                row = list(row)
+                row.append(func.ultrapassado(velocidade, pos_id))
+                csvwriter.writerow(row)
+        
+        time.sleep(3)
+
+        # print(query)
+
+        # print(result)
         
     else:
         messagebox.showerror("Erro", "Placa não é valida!")
