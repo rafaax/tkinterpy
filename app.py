@@ -21,7 +21,7 @@ from openpyxl.styles import PatternFill
 from openpyxl import load_workbook
 from xhtml2pdf import pisa
 from tkinter import *
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, filedialog
 from functions import Functions
 from tkcalendar import Calendar, DateEntry
 from src import conexao
@@ -107,12 +107,6 @@ def submit():
             df['ULTRAPASSADO'] = df.apply(lambda row: func.ultrapassado(row['VELOCIDADE'], row['VELOCIDADE VIA']), axis=1)
             df[["VELOCIDADE", "VELOCIDADE VIA"]] = df[["VELOCIDADE", "VELOCIDADE VIA"]].map(func.add_km)
 
-            # styled_df = df.style.set_properties(**{
-            #     'font-family': 'Gotham Book',
-            #     'font-size': '18px',
-            # }).applymap(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}''') \
-            #     .applymap(func.velocidade_excedida, subset='ULTRAPASSADO')
-
             font_style = {
                 'font-family': 'Gotham Book',
                 'font-size': '18px'
@@ -129,15 +123,6 @@ def submit():
 
             wb = load_workbook(filename_xlsx)
             ws = wb.active
-
-            image_url = 'https://vetorian.com/wp-content/uploads/2021/06/Logo-Vetorian-Horizontal_menor-1.png'  
-            response = requests.get(image_url)
-            image_content = BytesIO(response.content)
-
-            img = Image(image_content)
-
-            img = Image('image.jpg')  
-            ws.add_image(img, 'A1') 
             
             for column in ws.columns:
                 max_length = 0
@@ -151,9 +136,14 @@ def submit():
                 adjusted_width = (max_length + 2) * 1.2  
                 ws.column_dimensions[column_letter].width = adjusted_width
 
-            wb.save(filename_xlsx)
-            
-            # print(df)
+            # wb.save(filename_xlsx)
+
+            file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel", "*")])
+            if file_path:
+                try:
+                    wb.save(file_path)
+                except Exception as e:
+                    print(e)
         else:
             loading_page.after(1000, close_loading)
             messagebox.showerror("Erro", "Sem rota para este dia...")
