@@ -3,7 +3,7 @@ import pymysql
 import datetime
 import pprint
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 from tkcalendar import Calendar, DateEntry
 from src import conexao
 from mysql.connector import connect
@@ -37,17 +37,35 @@ def submit():
     result = cursor.fetchone()
 
     if result:
-        
         equipament_id = result[0]
+        
+        def close_loading():
+            loading_page.destroy()
+            
+        loading_page = Tk()
+        loading_page.title("Loading Page")
+        loading_page.geometry("300x200")
+        loading_page.resizable(False, False)
 
-        print("Consulta retornou resultado:", equipament_id)
+        loading_label = ttk.Label(loading_page, text="Carregando...", font=("Arial", 14))
+        loading_label.pack(pady=50)
+
+        progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
+        progress_bar.pack()
+        
+        loading_page.after(5000, close_loading)
+        progress_bar.start(10)
+
+        
+
+        # query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data_input + '" ORDER BY data_atualizacao DESC'
+        # cursor.execute(query)
+        
     else:
         messagebox.showerror("Erro", "Placa não é valida!")
 
 
     
-    #query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE placa = "' + placa + '" AND date(data_atualizacao) = "' + data_input + '" ORDER BY data_atualizacao DESC'
-    # cursor.execute(query)
 
     # results = cursor.fetchall()
     # pprint.pprint(results)
