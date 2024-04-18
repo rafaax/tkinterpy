@@ -3,8 +3,24 @@ import pymysql
 import datetime
 import pprint
 import csv
+import time
+import json
+import os
+import pytz
+import chardet
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from io import BytesIO
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.utils import get_column_letter
+from openpyxl import Workbook
+from openpyxl.drawing.image import Image
+from openpyxl.styles import PatternFill
+from xhtml2pdf import pisa
 from tkinter import *
 from tkinter import messagebox, ttk
+from functions import Functions
 from tkcalendar import Calendar, DateEntry
 from src import conexao
 from mysql.connector import connect
@@ -48,59 +64,74 @@ def submit():
         loading_page.geometry("300x200")
         loading_page.resizable(False, False)
 
-        loading_label = ttk.Label(loading_page, text="Carregando...", font=("Arial", 14))
-        loading_label.pack(pady=50)
-
         progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
-        progress_bar.pack()
-        
-        # loading_page.after(5000, close_loading)
-        progress_bar.start(10)
+        progress_bar.pack(pady=50)
 
         query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
         cursor.execute(query, (equipament_id, data_input))
 
         results = cursor.fetchall()
 
-        loading_page.after(5000, close_loading)
+        progress_bar.start(10)
 
-        data_to_write = [result for result in results]
-        with open('files/csv/'+placa + str(equipament_id) + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
-            csvwriter = csv.writer(csvfile)
+        if results: 
+            loading_page.after(1000, close_loading)
 
-            csvwriter.writerow(
-                ['PLACA', 'DATA', 'LOCAL', 'VELOCIDADE', 'VELOCIDADE VIA', 'LATITUDE', 'LONGITUDE', 'ULTRAPASSADO'])
+            data_to_write = [result for result in results]
             
-            for row in data_to_write:
-                velocidade, pos_id = row[3], row[4]
-                row = list(row)
-                row.append(func.ultrapassado(velocidade, pos_id))
-                csvwriter.writerow(row)
-        
-        time.sleep(3)
+            filename_csv = 'files/csv/' + placa + str(equipament_id) + data_input + '.csv'
 
-        # print(query)
+            with open(filename_csv, 'w', newline='', encoding='utf-8') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerow(['PLACA', 'DATA', 'LOCAL', 'VELOCIDADE', 'VELOCIDADE VIA', 'LATITUDE', 'LONGITUDE', 'ULTRAPASSADO'])
+                
+                for row in data_to_write:
+                    velocidade, pos_id = row[3], row[4]
+                    row = list(row)
+                    row.append(func.ultrapassado(velocidade, pos_id))
+                    csvwriter.writerow(row)
+            
 
-        # print(result)
+            with open(filename_csv, 'rb') as f:
+                charset = chardet.detect(f.read())
+                
+            encoding = charset['encoding']
+
+            df = pd.read_csv(filename_csv, encoding=encoding)
+            
+            df['DATA'] = pd.to_datetime(df['DATA'])
+            df['DATA'] = df['DATA'].dt.strftime('%d/%m/%Y %H:%M:%S')
+
+            df['ULTRAPASSADO'] = df.apply(lambda row: func.ultrapassado(row['VELOCIDADE'], row['VELOCIDADE VIA']), axis=1)
+            df[["VELOCIDADE", "VELOCIDADE VIA"]] = df[["VELOCIDADE", "VELOCIDADE VIA"]].applymap(func.add_km)
+
+            styled_df = df.style.set_properties(**{
+                'font-family': 'Gotham Book',
+                'font-size': '18px',
+            }).applymap(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}''') \
+                .applymap(func.velocidade_excedida, subset='ULTRAPASSADO')
+
+            filename_xlsx = 'files/xlsx/' + placa + str(equipament_id) + data_input + '.xlsx'
+            styled_df.to_excel(filename_xlsx, index=False)
+            
+            # print(df)
+        else:
+            loading_page.after(1000, close_loading)
+            messagebox.showerror("Erro", "Sem rota para este dia...")
+
         
     else:
         messagebox.showerror("Erro", "Placa não é valida!")
-
-
     
-
-    # results = cursor.fetchall()
-    # pprint.pprint(results)
-    
-
 
 now = datetime.datetime.now()
+func = Functions()
 
 app = Tk()
 app.title('Gerar Relatorio')
-app.geometry('600x400')
+app.geometry('300x150')
 app.wm_maxsize(width=600, height=400)
-app.wm_minsize(width=600, height=400)
+app.wm_minsize(width=300, height=150)
 
 text_1 = Label(app, text="Insira a placa")
 text_1.pack()
