@@ -63,7 +63,7 @@ def submit():
         progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
         progress_bar.pack(pady=50)
 
-        progress_bar.start(20)
+        progress_bar.start(10)
 
         query = (
             'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento ' 
@@ -73,7 +73,6 @@ def submit():
         cursor.execute(query, (equipament_id, data_input))
 
         results = cursor.fetchall()
-
         
 
         if results: 
