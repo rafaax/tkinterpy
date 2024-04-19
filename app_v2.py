@@ -43,6 +43,23 @@ def compararData(data, now):
         return data_input
 
 
+def close_loading(loading_page):
+    loading_page.destroy()
+
+
+
+def main_query(progress_bar,cursor, equipament_id, data):
+    progress_bar.start(10)
+
+    query = (
+        'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento ' 
+        'WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
+    )
+
+    cursor.execute(query, (equipament_id, data))
+
+    return  cursor.fetchall()
+
 
 def submit():
 
@@ -69,33 +86,21 @@ def submit():
 
     if equi_id:
         equipament_id = equi_id[0]
-        print(equipament_id)
-        
-        # def close_loading():
-        #     loading_page.destroy()
-          
-        # loading_page = Toplevel()
-        # loading_page.title("Loading Page")
-        # loading_page.geometry("300x200")
-        # loading_page.resizable(False, False)
+                  
+        loading_page = Toplevel()
+        loading_page.title("Loading Page")
+        loading_page.geometry("300x200")
+        loading_page.resizable(False, False)
 
-        # progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
-        # progress_bar.pack(pady=50)
-
-        # progress_bar.start(10)
-
-        # query = (
-        #     'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento ' 
-        #     'WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
-        # )
-
-        # cursor.execute(query, (equipament_id, data_input))
-
-        # results = cursor.fetchall()
+        progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
+        progress_bar.pack(pady=50)
         
 
-        # if results: 
-        #     loading_page.after(1000, close_loading)
+        results = main_query(progress_bar, cursor, equipament_id, data)
+        print(results)
+        
+        if results: 
+            loading_page.after(1000, lambda: close_loading(loading_page))
 
         #     data_to_write = [result for result in results]
             
