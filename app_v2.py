@@ -21,6 +21,13 @@ from tkcalendar import DateEntry
 from src import conexao
 from mysql.connector import connect
 
+def issetPlaca(cursor ,placa):
+    query = 'SELECT equi_id from sau_veiculos where placa = %s limit 1'
+    cursor.execute(query, (placa, ))
+    result = cursor.fetchone()
+    return result
+
+
 def submit():
 
     conn = connect(user=conexao.user, password=conexao.passw, host=conexao.host, database=conexao.db)
@@ -43,118 +50,117 @@ def submit():
 
     cursor = conn.cursor()
 
-    query = 'SELECT equi_id from sau_veiculos where placa = %s limit 1'
-    cursor.execute(query, (placa, ))
-
-    result = cursor.fetchone()
+    
+    result = issetPlaca(cursor, placa)
+    
 
     if result:
         equipament_id = result[0]
         
-        def close_loading():
-            loading_page.destroy()
+        # def close_loading():
+        #     loading_page.destroy()
           
-        loading_page = Toplevel()
-        loading_page.title("Loading Page")
-        loading_page.geometry("300x200")
-        loading_page.resizable(False, False)
+        # loading_page = Toplevel()
+        # loading_page.title("Loading Page")
+        # loading_page.geometry("300x200")
+        # loading_page.resizable(False, False)
 
-        progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
-        progress_bar.pack(pady=50)
+        # progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
+        # progress_bar.pack(pady=50)
 
-        progress_bar.start(10)
+        # progress_bar.start(10)
 
-        query = (
-            'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento ' 
-            'WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
-        )
+        # query = (
+        #     'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento ' 
+        #     'WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
+        # )
 
-        cursor.execute(query, (equipament_id, data_input))
+        # cursor.execute(query, (equipament_id, data_input))
 
-        results = cursor.fetchall()
+        # results = cursor.fetchall()
         
 
-        if results: 
-            loading_page.after(1000, close_loading)
+        # if results: 
+        #     loading_page.after(1000, close_loading)
 
-            data_to_write = [result for result in results]
+        #     data_to_write = [result for result in results]
             
-            filename_csv = 'files/csv/' + placa + str(equipament_id) + data_input + '.csv'
+        #     filename_csv = 'files/csv/' + placa + str(equipament_id) + data_input + '.csv'
 
-            with open(filename_csv, 'w', newline='', encoding='utf-8') as csvfile:
-                csvwriter = csv.writer(csvfile)
-                csvwriter.writerow(['PLACA', 'DATA', 'LOCAL', 'VELOCIDADE', 'VELOCIDADE VIA', 'LATITUDE', 'LONGITUDE', 'ULTRAPASSADO'])
+        #     with open(filename_csv, 'w', newline='', encoding='utf-8') as csvfile:
+        #         csvwriter = csv.writer(csvfile)
+        #         csvwriter.writerow(['PLACA', 'DATA', 'LOCAL', 'VELOCIDADE', 'VELOCIDADE VIA', 'LATITUDE', 'LONGITUDE', 'ULTRAPASSADO'])
                 
-                for row in data_to_write:
-                    velocidade, pos_id = row[3], row[4]
-                    row = list(row)
-                    row.append(func.ultrapassado(velocidade, pos_id))
-                    csvwriter.writerow(row)
+        #         for row in data_to_write:
+        #             velocidade, pos_id = row[3], row[4]
+        #             row = list(row)
+        #             row.append(func.ultrapassado(velocidade, pos_id))
+        #             csvwriter.writerow(row)
             
 
-            with open(filename_csv, 'rb') as f:
-                charset = chardet.detect(f.read())
+        #     with open(filename_csv, 'rb') as f:
+        #         charset = chardet.detect(f.read())
                 
-            encoding = charset['encoding']
+        #     encoding = charset['encoding']
 
-            df = pd.read_csv(filename_csv, encoding=encoding)
+        #     df = pd.read_csv(filename_csv, encoding=encoding)
             
-            df['DATA'] = pd.to_datetime(df['DATA'])
-            df['DATA'] = df['DATA'].dt.strftime('%d/%m/%Y %H:%M:%S')
+        #     df['DATA'] = pd.to_datetime(df['DATA'])
+        #     df['DATA'] = df['DATA'].dt.strftime('%d/%m/%Y %H:%M:%S')
 
-            df['ULTRAPASSADO'] = df.apply(lambda row: func.ultrapassado(row['VELOCIDADE'], row['VELOCIDADE VIA']), axis=1)
-            df[["VELOCIDADE", "VELOCIDADE VIA"]] = df[["VELOCIDADE", "VELOCIDADE VIA"]].map(func.add_km)
+        #     df['ULTRAPASSADO'] = df.apply(lambda row: func.ultrapassado(row['VELOCIDADE'], row['VELOCIDADE VIA']), axis=1)
+        #     df[["VELOCIDADE", "VELOCIDADE VIA"]] = df[["VELOCIDADE", "VELOCIDADE VIA"]].map(func.add_km)
 
-            font_style = {
-                'font-family': 'Gotham Book',
-                'font-size': '18px'
-            }
+        #     font_style = {
+        #         'font-family': 'Gotham Book',
+        #         'font-size': '18px'
+        #     }
 
-            styled_df = df.style.set_properties(**font_style)
+        #     styled_df = df.style.set_properties(**font_style)
 
-            styled_df = styled_df.map(func.velocidade_excedida, subset='ULTRAPASSADO')
+        #     styled_df = styled_df.map(func.velocidade_excedida, subset='ULTRAPASSADO')
 
-            styled_df = styled_df.map(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}')
+        #     styled_df = styled_df.map(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}')
     
-            filename_xlsx = 'files/xlsx/' + placa + str(equipament_id) + data_input + '.xlsx'
-            styled_df.to_excel(filename_xlsx, index=False, sheet_name = placa, engine='openpyxl')
+        #     filename_xlsx = 'files/xlsx/' + placa + str(equipament_id) + data_input + '.xlsx'
+        #     styled_df.to_excel(filename_xlsx, index=False, sheet_name = placa, engine='openpyxl')
 
-            wb = load_workbook(filename_xlsx)
-            ws = wb.active
+        #     wb = load_workbook(filename_xlsx)
+        #     ws = wb.active
             
-            for column in ws.columns:
-                max_length = 0
-                column_letter = column[0].column_letter
-                for cell in column:
-                    try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(cell.value)
-                    except:
-                        pass
-                adjusted_width = (max_length + 2) * 1.2  
-                ws.column_dimensions[column_letter].width = adjusted_width
+        #     for column in ws.columns:
+        #         max_length = 0
+        #         column_letter = column[0].column_letter
+        #         for cell in column:
+        #             try:
+        #                 if len(str(cell.value)) > max_length:
+        #                     max_length = len(cell.value)
+        #             except:
+        #                 pass
+        #         adjusted_width = (max_length + 2) * 1.2  
+        #         ws.column_dimensions[column_letter].width = adjusted_width
 
-            # wb.save(filename_xlsx)
+        #     # wb.save(filename_xlsx)
 
-            file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("XLSX", "*.xlsx")])
-            if file_path:
-                try:
-                    wb.save(file_path)
-                    if os.path.exists(file_path):
-                        print("O arquivo foi salvo com sucesso.")
-                        messagebox.showinfo("Sucesso", f"Arquivo inserido no caminho: {file_path} ")
-                        return True
-                    else:
-                        print("Falha ao salvar o arquivo.")
-                        messagebox.askokcancel("Erro", "ERRO AO SALVAR O ARQUIVO!!")
-                        return False
+        #     file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("XLSX", "*.xlsx")])
+        #     if file_path:
+        #         try:
+        #             wb.save(file_path)
+        #             if os.path.exists(file_path):
+        #                 print("O arquivo foi salvo com sucesso.")
+        #                 messagebox.showinfo("Sucesso", f"Arquivo inserido no caminho: {file_path} ")
+        #                 return True
+        #             else:
+        #                 print("Falha ao salvar o arquivo.")
+        #                 messagebox.askokcancel("Erro", "ERRO AO SALVAR O ARQUIVO!!")
+        #                 return False
 
-                except Exception as e:
-                    print(e)
+        #         except Exception as e:
+        #             print(e)
 
-        else:
-            loading_page.after(1000, close_loading)
-            messagebox.showerror("Erro", "Sem rota para este dia...")
+        # else:
+        #     loading_page.after(1000, close_loading)
+        #     messagebox.showerror("Erro", "Sem rota para este dia...")
 
         
     else:
