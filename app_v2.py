@@ -21,41 +21,55 @@ from tkcalendar import DateEntry
 from src import conexao
 from mysql.connector import connect
 
-def issetPlaca(cursor ,placa):
+def buscaEquipamentoID(cursor ,placa):
     query = 'SELECT equi_id from sau_veiculos where placa = %s limit 1'
     cursor.execute(query, (placa, ))
     result = cursor.fetchone()
     return result
 
-
-def submit():
-
-    conn = connect(user=conexao.user, password=conexao.passw, host=conexao.host, database=conexao.db)
-    
-    data = input_date.get_date()
-    placa = input_text.get()
-    
+def validaPlaca(placa):
     if not placa:
         messagebox.showwarning("Erro", "Por favor insira alguma placa.")
         return False
 
-    placa = placa.replace('-', '') # removendo o traço da string para nao haver conflito
-
+def compararData(data, now):
     data_hoje = now.strftime("%Y-%m-%d")
     data_input = data.strftime("%Y-%m-%d")
-    
+
     if data_input > data_hoje:
         messagebox.showerror("Erro", "Data inserida não é valida por ser maior que a data atual!")
         return False
+    else:
+        return data_input
 
+
+
+def submit():
+
+    conn = connect(user=conexao.user, password=conexao.passw, host=conexao.host, database=conexao.db)
     cursor = conn.cursor()
 
+    data = input_date.get_date()
+    placa = input_text.get()
     
-    result = issetPlaca(cursor, placa)
+    if validaPlaca(placa) == False:
+        return 0
+    
+    
+    placa = placa.replace('-', '') # removendo o traço da string para nao haver conflito
+    
+    if not compararData(data, now):
+        return 0
+    else: 
+        data = compararData(data, now)
     
 
-    if result:
-        equipament_id = result[0]
+    equi_id = buscaEquipamentoID(cursor, placa)
+
+
+    if equi_id:
+        equipament_id = equi_id[0]
+        print(equipament_id)
         
         # def close_loading():
         #     loading_page.destroy()
