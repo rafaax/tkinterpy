@@ -86,6 +86,32 @@ def buscar_charset(filename):
     encoding = charset['encoding']
     return encoding
 
+
+def csv_para_excel(df, placa, equipament_id, data):
+    df['DATA'] = pd.to_datetime(df['DATA'])
+    df['DATA'] = df['DATA'].dt.strftime('%d/%m/%Y %H:%M:%S')
+
+    df['ULTRAPASSADO'] = df.apply(lambda row: func.ultrapassado(row['VELOCIDADE'], row['VELOCIDADE VIA']), axis=1)
+    df[["VELOCIDADE", "VELOCIDADE VIA"]] = df[["VELOCIDADE", "VELOCIDADE VIA"]].map(func.add_km)
+
+    font_style = {
+        'font-family': 'Gotham Book',
+        'font-size': '18px'
+    }
+
+    styled_df = df.style.set_properties(**font_style)
+
+    styled_df = styled_df.map(func.velocidade_excedida, subset='ULTRAPASSADO')
+
+    styled_df = styled_df.map(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}')
+
+    filename_xlsx = 'files/xlsx/' + placa + str(equipament_id) + data + '.xlsx'
+    styled_df.to_excel(filename_xlsx, index=False, sheet_name = placa, engine='openpyxl')
+
+    return filename_xlsx
+
+
+
 def submit():
 
     conn = connect(user=conexao.user, password=conexao.passw, host=conexao.host, database=conexao.db)
@@ -129,28 +155,10 @@ def submit():
             
 
             df = pd.read_csv(filename_csv, encoding=buscar_charset(filename_csv))
-            print(df)
+            filename_xlsx = csv_para_excel(df, placa, equipament_id, data)
+            print(filename_xlsx)
             
-        #     df['DATA'] = pd.to_datetime(df['DATA'])
-        #     df['DATA'] = df['DATA'].dt.strftime('%d/%m/%Y %H:%M:%S')
-
-        #     df['ULTRAPASSADO'] = df.apply(lambda row: func.ultrapassado(row['VELOCIDADE'], row['VELOCIDADE VIA']), axis=1)
-        #     df[["VELOCIDADE", "VELOCIDADE VIA"]] = df[["VELOCIDADE", "VELOCIDADE VIA"]].map(func.add_km)
-
-        #     font_style = {
-        #         'font-family': 'Gotham Book',
-        #         'font-size': '18px'
-        #     }
-
-        #     styled_df = df.style.set_properties(**font_style)
-
-        #     styled_df = styled_df.map(func.velocidade_excedida, subset='ULTRAPASSADO')
-
-        #     styled_df = styled_df.map(lambda x: f'color: {"black" if isinstance(x, str) else "purple"}')
-    
-        #     filename_xlsx = 'files/xlsx/' + placa + str(equipament_id) + data_input + '.xlsx'
-        #     styled_df.to_excel(filename_xlsx, index=False, sheet_name = placa, engine='openpyxl')
-
+        #     
         #     wb = load_workbook(filename_xlsx)
         #     ws = wb.active
             
