@@ -149,8 +149,6 @@ def ajustar_colunas(filename):
 
     dialogo_salvar_arquivo(wb)
 
-    
-
 
 def submit():
 
@@ -185,21 +183,17 @@ def submit():
         progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
         progress_bar.pack(pady=50)
         
-
         results = main_query(progress_bar, cursor, equipament_id, data)
         
         if results: 
             loading_page.after(1000, lambda: close_loading(loading_page))
             filename_csv = salvar_csv(results, placa, equi_id, data)
-            
-            
-
             df = pd.read_csv(filename_csv, encoding=buscar_charset(filename_csv))
             filename_xlsx = csv_para_excel(df, placa, equipament_id, data)
             ajustar_colunas(filename_xlsx)
             
         else:
-            loading_page.after(1000, close_loading)
+            loading_page.after(1000, lambda: close_loading(loading_page))
             messagebox.showerror("Erro", "Sem rota para este dia...")
 
         
@@ -208,30 +202,30 @@ def submit():
     
 
 
+def main():
+    now = datetime.datetime.now()
+    func = Functions()
+
+    app = Tk()
+    app.title('Gerar Relatorio')
+    app.geometry('300x150')
+    app.wm_maxsize(width=600, height=400)
+    app.wm_minsize(width=300, height=150)
+
+    text_1 = Label(app, text="Insira a placa")
+    text_1.pack()
+
+    input_text = Entry(app, width=12)
+    input_text.pack()
+
+    input_date = DateEntry(app, width=12, background='black', foreground='white', borderwidth=2, year=now.year, date_pattern="dd/mm/yyyy")
+    input_date.pack(pady=10)
+
+    Button(app, text= "Salvar", command=submit).pack()
+
+    app.mainloop()
 
 
-## main
-## interface inicial
+if __name__ == "__main__":
+    main()
 
-now = datetime.datetime.now()
-func = Functions()
-
-app = Tk()
-app.title('Gerar Relatorio')
-app.geometry('300x150')
-app.wm_maxsize(width=600, height=400)
-app.wm_minsize(width=300, height=150)
-
-text_1 = Label(app, text="Insira a placa")
-text_1.pack()
-
-input_text = Entry(app, width=12)
-input_text.pack()
-
-input_date = DateEntry(app, width=12, background='black', foreground='white', borderwidth=2, year=now.year, date_pattern="dd/mm/yyyy")
-input_date.pack(pady=10)
-
-Button(app, text= "Salvar", command=submit).pack()
-
-
-app.mainloop()
