@@ -60,8 +60,8 @@ def submit():
         
         def close_loading():
             loading_page.destroy()
-            
-        loading_page = Tk()
+          
+        loading_page = Toplevel()
         loading_page.title("Loading Page")
         loading_page.geometry("300x200")
         loading_page.resizable(False, False)
@@ -69,12 +69,18 @@ def submit():
         progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
         progress_bar.pack(pady=50)
 
-        query = 'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
+        progress_bar.start(20)
+
+        query = (
+            'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento ' 
+            'WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
+        )
+
         cursor.execute(query, (equipament_id, data_input))
 
         results = cursor.fetchall()
 
-        progress_bar.start(10)
+        
 
         if results: 
             loading_page.after(1000, close_loading)
@@ -138,12 +144,22 @@ def submit():
 
             # wb.save(filename_xlsx)
 
-            file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel", "*")])
+            file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("XLSX", "*.xlsx")])
             if file_path:
                 try:
                     wb.save(file_path)
+                    if os.path.exists(file_path):
+                        print("O arquivo foi salvo com sucesso.")
+                        messagebox.showinfo("Sucesso", f"Arquivo inserido no caminho: {file_path} ")
+                        return True
+                    else:
+                        print("Falha ao salvar o arquivo.")
+                        messagebox.askokcancel("Erro", "ERRO AO SALVAR O ARQUIVO!!")
+                        return True
+
                 except Exception as e:
                     print(e)
+
         else:
             loading_page.after(1000, close_loading)
             messagebox.showerror("Erro", "Sem rota para este dia...")
@@ -152,6 +168,12 @@ def submit():
     else:
         messagebox.showerror("Erro", "Placa não é valida!")
     
+
+
+
+
+## main
+## interface inicial
 
 now = datetime.datetime.now()
 func = Functions()
