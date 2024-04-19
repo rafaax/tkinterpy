@@ -21,11 +21,12 @@ from tkcalendar import DateEntry
 from src import conexao
 from mysql.connector import connect
 
-def buscaEquipamentoID(cursor ,placa):
+def buscaEquipamentoID(cursor, placa):
     query = 'SELECT equi_id from sau_veiculos where placa = %s limit 1'
     cursor.execute(query, (placa, ))
     result = cursor.fetchone()
-    return result
+
+    return result[0]
 
 def validaPlaca(placa):
     if not placa:
@@ -61,6 +62,30 @@ def main_query(progress_bar,cursor, equipament_id, data):
     return  cursor.fetchall()
 
 
+def salvar_csv(results, placa, equipament_id, data):
+    data_to_write = [result for result in results]            
+    filename_csv = 'files/csv/' + placa + str(equipament_id) + data + '.csv'
+
+    with open(filename_csv, 'w', newline='', encoding='utf-8') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(['PLACA', 'DATA', 'LOCAL', 'VELOCIDADE', 'VELOCIDADE VIA', 'LATITUDE', 'LONGITUDE', 'ULTRAPASSADO'])
+        
+        for row in data_to_write:
+            velocidade, pos_id = row[3], row[4]
+            row = list(row)
+            row.append(func.ultrapassado(velocidade, pos_id))
+            csvwriter.writerow(row)
+
+    return filename_csv
+
+
+def buscar_charset(filename):
+    with open(filename, 'rb') as f:
+        charset = chardet.detect(f.read())    
+    
+    encoding = charset['encoding']
+    return encoding
+
 def submit():
 
     conn = connect(user=conexao.user, password=conexao.passw, host=conexao.host, database=conexao.db)
@@ -83,9 +108,8 @@ def submit():
 
     equi_id = buscaEquipamentoID(cursor, placa)
 
-
     if equi_id:
-        equipament_id = equi_id[0]
+        equipament_id = equi_id
                   
         loading_page = Toplevel()
         loading_page.title("Loading Page")
@@ -97,32 +121,15 @@ def submit():
         
 
         results = main_query(progress_bar, cursor, equipament_id, data)
-        print(results)
         
         if results: 
             loading_page.after(1000, lambda: close_loading(loading_page))
-
-        #     data_to_write = [result for result in results]
+            filename_csv = salvar_csv(results, placa, equi_id, data)
             
-        #     filename_csv = 'files/csv/' + placa + str(equipament_id) + data_input + '.csv'
-
-        #     with open(filename_csv, 'w', newline='', encoding='utf-8') as csvfile:
-        #         csvwriter = csv.writer(csvfile)
-        #         csvwriter.writerow(['PLACA', 'DATA', 'LOCAL', 'VELOCIDADE', 'VELOCIDADE VIA', 'LATITUDE', 'LONGITUDE', 'ULTRAPASSADO'])
-                
-        #         for row in data_to_write:
-        #             velocidade, pos_id = row[3], row[4]
-        #             row = list(row)
-        #             row.append(func.ultrapassado(velocidade, pos_id))
-        #             csvwriter.writerow(row)
             
 
-        #     with open(filename_csv, 'rb') as f:
-        #         charset = chardet.detect(f.read())
-                
-        #     encoding = charset['encoding']
-
-        #     df = pd.read_csv(filename_csv, encoding=encoding)
+            df = pd.read_csv(filename_csv, encoding=buscar_charset(filename_csv))
+            print(df)
             
         #     df['DATA'] = pd.to_datetime(df['DATA'])
         #     df['DATA'] = df['DATA'].dt.strftime('%d/%m/%Y %H:%M:%S')
