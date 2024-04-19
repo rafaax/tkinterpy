@@ -1,7 +1,5 @@
 import sys
-import pymysql
 import datetime
-import pprint
 import csv
 import time
 import json
@@ -10,20 +8,16 @@ import pytz
 import chardet
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import requests
 from io import BytesIO
-from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl.utils import get_column_letter
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
 from openpyxl.styles import PatternFill
 from openpyxl import load_workbook
-from xhtml2pdf import pisa
 from tkinter import *
 from tkinter import messagebox, ttk, filedialog
 from functions import Functions
-from tkcalendar import Calendar, DateEntry
+from tkcalendar import DateEntry
 from src import conexao
 from mysql.connector import connect
 
@@ -155,7 +149,7 @@ def submit():
                     else:
                         print("Falha ao salvar o arquivo.")
                         messagebox.askokcancel("Erro", "ERRO AO SALVAR O ARQUIVO!!")
-                        return True
+                        return False
 
                 except Exception as e:
                     print(e)
