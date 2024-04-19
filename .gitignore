@@ -1,1 +1,3 @@
 src/conexao.py
+dist/
+build/
