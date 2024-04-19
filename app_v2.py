@@ -111,6 +111,46 @@ def csv_para_excel(df, placa, equipament_id, data):
     return filename_xlsx
 
 
+def dialogo_salvar_arquivo(wb):
+
+    file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("XLSX", "*.xlsx")])
+    if file_path:
+        try:
+            wb.save(file_path)
+            if os.path.exists(file_path):
+                print("O arquivo foi salvo com sucesso.")
+                messagebox.showinfo("Sucesso", f"Arquivo inserido no caminho: {file_path} ")
+                return True
+            else:
+                print("Falha ao salvar o arquivo.")
+                messagebox.askokcancel("Erro", "ERRO AO SALVAR O ARQUIVO!!")
+                return False
+
+        except Exception as e:
+            print(e)
+
+
+def ajustar_colunas(filename):
+    wb = load_workbook(filename)
+    ws = wb.active
+    
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+        adjusted_width = (max_length + 2) * 1.2  
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+
+    dialogo_salvar_arquivo(wb)
+
+    
+
 
 def submit():
 
@@ -156,45 +196,11 @@ def submit():
 
             df = pd.read_csv(filename_csv, encoding=buscar_charset(filename_csv))
             filename_xlsx = csv_para_excel(df, placa, equipament_id, data)
-            print(filename_xlsx)
+            ajustar_colunas(filename_xlsx)
             
-        #     
-        #     wb = load_workbook(filename_xlsx)
-        #     ws = wb.active
-            
-        #     for column in ws.columns:
-        #         max_length = 0
-        #         column_letter = column[0].column_letter
-        #         for cell in column:
-        #             try:
-        #                 if len(str(cell.value)) > max_length:
-        #                     max_length = len(cell.value)
-        #             except:
-        #                 pass
-        #         adjusted_width = (max_length + 2) * 1.2  
-        #         ws.column_dimensions[column_letter].width = adjusted_width
-
-        #     # wb.save(filename_xlsx)
-
-        #     file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("XLSX", "*.xlsx")])
-        #     if file_path:
-        #         try:
-        #             wb.save(file_path)
-        #             if os.path.exists(file_path):
-        #                 print("O arquivo foi salvo com sucesso.")
-        #                 messagebox.showinfo("Sucesso", f"Arquivo inserido no caminho: {file_path} ")
-        #                 return True
-        #             else:
-        #                 print("Falha ao salvar o arquivo.")
-        #                 messagebox.askokcancel("Erro", "ERRO AO SALVAR O ARQUIVO!!")
-        #                 return False
-
-        #         except Exception as e:
-        #             print(e)
-
-        # else:
-        #     loading_page.after(1000, close_loading)
-        #     messagebox.showerror("Erro", "Sem rota para este dia...")
+        else:
+            loading_page.after(1000, close_loading)
+            messagebox.showerror("Erro", "Sem rota para este dia...")
 
         
     else:
