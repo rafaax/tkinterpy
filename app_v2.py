@@ -150,11 +150,21 @@ def ajustar_colunas(filename):
 
     dialogo_salvar_arquivo(wb)
 
+def validarDir(path):
+    if os.path.exists(path):
+        print('diretorio existe')
+    else:
+        print('diretorio nao existe')
+
+
+# def makeDir():
+#     try:
+#         os.mkdir(path)
+#     except OSError as error:
+#         print(error)
+
 
 def submit():
-
-    print(os.path.exists('files/csv'))
-    sys.exit()
 
     conn = connect(user=conexao.user, password=conexao.passw, host=conexao.host, database=conexao.db)
     cursor = conn.cursor()
@@ -210,6 +220,16 @@ def submit():
 
 ## main
 ## interface inicial
+
+validarDir('files/csv')
+validarDir('files/xlsx')
+
+# try:
+#     os.mkdir(path)
+# except OSError as error:
+#     print(error)  
+
+# sys.exit()
 
 now = datetime.datetime.now()
 func = Functions()
