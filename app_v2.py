@@ -16,9 +16,9 @@ from openpyxl.styles import PatternFill
 from openpyxl import load_workbook
 from tkinter import *
 from tkinter import messagebox, ttk, filedialog
-from functions import Functions
 from tkcalendar import DateEntry
-from src import conexao
+from src import conexao, functions
+# from functions import Functions
 from mysql.connector import connect
 
 def buscaEquipamentoID(cursor, placa):
@@ -49,7 +49,7 @@ def close_loading(loading_page):
 
 
 
-def main_query(progress_bar,cursor, equipament_id, data):
+def main_query(progress_bar, cursor, equipament_id, data):
     progress_bar.start(10)
 
     query = (
@@ -154,6 +154,7 @@ def validarDir(path):
     if os.path.exists(path):
         print('diretorio existe')
     else:
+        print('diretorio inexistente')
         makeDir(path)
 
 
@@ -217,14 +218,13 @@ def submit():
 
 
 ## main
-## interface inicial
 
+validarDir('files/')
 validarDir('files/csv')
 validarDir('files/xlsx')
-# sys.exit()
 
 now = datetime.datetime.now()
-func = Functions()
+func = functions.Functions()
 
 app = Tk()
 app.title('Gerar Relatorio')
