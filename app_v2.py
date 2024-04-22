@@ -154,14 +154,15 @@ def validarDir(path):
     if os.path.exists(path):
         print('diretorio existe')
     else:
-        print('diretorio nao existe')
+        makeDir(path)
 
 
-# def makeDir():
-#     try:
-#         os.mkdir(path)
-#     except OSError as error:
-#         print(error)
+def makeDir(path):
+    try:
+        os.mkdir(path)
+        print('destino criado')
+    except OSError as error:
+        print(error)
 
 
 def submit():
@@ -213,9 +214,6 @@ def submit():
         
     else:
         messagebox.showerror("Erro", "Placa não é valida!")
-    
-
-
 
 
 ## main
@@ -223,12 +221,6 @@ def submit():
 
 validarDir('files/csv')
 validarDir('files/xlsx')
-
-# try:
-#     os.mkdir(path)
-# except OSError as error:
-#     print(error)  
-
 # sys.exit()
 
 now = datetime.datetime.now()
