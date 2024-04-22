@@ -63,7 +63,8 @@ def main_query(progress_bar,cursor, equipament_id, data):
 
 
 def salvar_csv(results, placa, equipament_id, data):
-    data_to_write = [result for result in results]            
+    data_to_write = [result for result in results]
+
     filename_csv = 'files/csv/' + placa + str(equipament_id) + data + '.csv'
 
     with open(filename_csv, 'w', newline='', encoding='utf-8') as csvfile:
@@ -151,6 +152,9 @@ def ajustar_colunas(filename):
 
 
 def submit():
+
+    print(os.path.exists('files/csv'))
+    sys.exit()
 
     conn = connect(user=conexao.user, password=conexao.passw, host=conexao.host, database=conexao.db)
     cursor = conn.cursor()
