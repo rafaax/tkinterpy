@@ -25,8 +25,13 @@ def buscaEquipamentoID(cursor, placa):
     query = 'SELECT equi_id from sau_veiculos where placa = %s limit 1'
     cursor.execute(query, (placa, ))
     result = cursor.fetchone()
-
-    return result[0]
+    
+    if result != None:
+        print(result[0])
+        return result[0]
+    else:
+        print(result)
+    
 
 def validaPlaca(placa):
     if not placa:
@@ -50,16 +55,23 @@ def close_loading(loading_page):
 
 
 def main_query(progress_bar, cursor, equipament_id, data):
-    progress_bar.start(10)
 
     query = (
         'SELECT placa, data_atualizacao, observacao, velocidade, pos_id, latitude, longitude FROM sau_posicionamento ' 
         'WHERE equi_id = %s AND date(data_atualizacao) = %s ORDER BY data_atualizacao DESC'
     )
-
+    
     cursor.execute(query, (equipament_id, data))
-
-    return  cursor.fetchall()
+    retorno = cursor.fetchall()
+    
+    print(query)
+    print(retorno)
+    
+    if not retorno:
+        return False
+    else:
+        return retorno
+    
 
 
 def salvar_csv(results, placa, equipament_id, data):
@@ -177,7 +189,6 @@ def submit():
     if validaPlaca(placa) == False:
         return 0
     
-    
     placa = placa.replace('-', '') # removendo o traço da string para nao haver conflito
     
     if not compararData(data, now):
@@ -199,14 +210,18 @@ def submit():
         progress_bar = ttk.Progressbar(loading_page, length=200, mode='indeterminate')
         progress_bar.pack(pady=50)
         
+        progress_bar.start(10)
+
         results = main_query(progress_bar, cursor, equipament_id, data)
-        
+
         if results: 
-            loading_page.after(1000, lambda: close_loading(loading_page))
+            
             filename_csv = salvar_csv(results, placa, equi_id, data)
             df = pd.read_csv(filename_csv, encoding=buscar_charset(filename_csv))
             filename_xlsx = csv_para_excel(df, placa, equipament_id, data)
             ajustar_colunas(filename_xlsx)
+
+            loading_page.after(1000, lambda: close_loading(loading_page))
             
         else:
             loading_page.after(1000, lambda: close_loading(loading_page))
